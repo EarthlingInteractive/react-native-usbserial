@@ -1,13 +1,17 @@
 package com.bmateam.reactnativeusbserial;
 
+import android.util.Log;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Promise;
+
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 
 import java.io.IOException;
 
 public class UsbSerialDevice {
     private UsbSerialPort port;
-    private static final int SERIAL_TIMEOUT = 1000;
+    private static final int SERIAL_TIMEOUT = 60*1000;
 
     public UsbSerialDevice(UsbSerialPort port) {
         this.port = port;
@@ -33,10 +37,20 @@ public class UsbSerialDevice {
     public void readAsync(Promise promise) {
 
         if (port != null) {
-            // TODO
-            promise.resolve(null);
+            try {
+                byte buffer[] = new byte[16*1024]; // same as CommonUsbSerialPort
+                int numBytesRead = port.read(buffer, SERIAL_TIMEOUT);
+
+                WritableMap map = Arguments.createMap();
+                map.putString("result", new String(buffer));
+
+                promise.resolve(map);
+            } catch (IOException e) {
+                String stackTrace = Log.getStackTraceString(e);
+                promise.reject(stackTrace, e);
+            }
         } else {
-            promise.resolve(getNoPortErrorMessage());
+            promise.reject("No port present for the UsbSerialDevice instance", getNoPortErrorMessage());
         }
     }
 

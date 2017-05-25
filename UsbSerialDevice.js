@@ -9,6 +9,10 @@ class UsbSerialDevice {
     writeAsync(value = "") {
         return this.UsbSerialModule.writeInDeviceAsync(this.id, value);
     }
+
+    readAsync() {
+        return this.UsbSerialModule.readFromDeviceAsync(this.id);
+    }
 }
 
 module.exports = UsbSerialDevice;
